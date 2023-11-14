@@ -154,6 +154,20 @@ end
 local cmd_pipe = assert(io.open(cmd_pipe_path, "rb"))
 local ret_pipe = assert(io.open(ret_pipe_path, "wb"))
 
+function _send_display_data(data,metadata)
+    metadata = metadata or { }
+    if next(metadata) == nil then metadata['']='' end -- force dict
+    netstring.write(ret_pipe, json.encode({
+        type = "display_data",
+        payload = {
+            data     = data,
+            metadata = metadata,
+        }
+    }))
+    ret_pipe:flush()
+    local message = json.decode(netstring.read(cmd_pipe))
+end
+
 while true do
     local message = json.decode(netstring.read(cmd_pipe))
     if message.type == "echo" then

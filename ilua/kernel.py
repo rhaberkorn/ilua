@@ -143,6 +143,14 @@ class ILuaKernel(KernelBase):
                                    sleep_deferred.callback, None)
             yield sleep_deferred
 
+        while result["type"] == "display_data":
+            if not silent:
+                self.send_update("display_data", {
+                    'data':     result["payload"]["data"],
+                    'metadata': result["payload"]["metadata"]
+                })
+            result = yield self.proto.sendRequest({"type": "...", "payload": "..."})
+
         if result["payload"]["success"]:
             if result['payload']['returned'] != "" and not silent:
                 self.send_update("execute_result", {
