@@ -9,5 +9,5 @@
 	],
 	"display_name": "Lua",
 	"language": "lua",
-	"interrupt_mode": "message"
+	"interrupt_mode": "signal"
 }

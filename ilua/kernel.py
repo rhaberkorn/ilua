@@ -14,6 +14,7 @@ stuff
 import json
 import os
 import re
+import signal
 
 from distutils.spawn import find_executable
 
@@ -98,6 +99,10 @@ class ILuaKernel(KernelBase):
                                                          [self.lua_interpreter,
                                                           INTERPRETER_SCRIPT],
                                                          None)
+
+        # SIGINT should still be passed to child processes and therefore
+        # to the Lua interpreter process.
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     @defer.inlineCallbacks
     def do_startup(self):
@@ -283,7 +288,12 @@ class ILuaKernel(KernelBase):
         })
 
     def do_interrupt(self):
-        self.log.warn("ILua does not support keyboard interrupts")
+        # FIXME: The currently executing cell hangs indefinitely perhaps because
+        # the response message of the failing cell in do_execute() is not interpreted
+        # correctly by the frontend.
+        # Instead, we are relying on interrupt_mode=signal now.
+        self.lua_process.signalProcess("INT")
+        return {'status': 'ok'}
 
     def do_shutdown(self):
         self.pipes.loseConnection()
